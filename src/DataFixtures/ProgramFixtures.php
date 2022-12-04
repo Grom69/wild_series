@@ -9,13 +9,40 @@ use Doctrine\Persistence\ObjectManager;
 
 class ProgramFixtures extends Fixture implements DependentFixtureInterface
 {
+    public const TITLES = [
+        'Friends',
+        'Game of Throne',
+        'Dexter',
+        'Haunting of Hill House',
+        'L\'Attaque des Titans'
+    ];
+
+    public const SYNOPSIS = [
+        'L\'histoire raconte les péripéties de trois jeunes femmes et trois jeunes hommes new-yorkais liés par une profonde amitié. Entre amour, travail, famille, ils partagent leurs bonheurs et leurs soucis au Central Perk, leur café favori.',
+        'Histoire de jeux de pouvoir',
+        'Histoire de seriel killer',
+        'Histoire de fantôme',
+        'Histoire de titans'
+    ];
+
+    public const REF_CATEGORIES = [
+        'category_Action',
+        'category_Fantastique',
+        'category_Action',
+        'category_Horreur',
+        'category_Animation'
+    ];
+
     public function load(ObjectManager $manager): void
     {
-        $program = new Program();
-        $program->setTitle("Friends");
-        $program->setSynopsis("L'histoire raconte les péripéties de trois jeunes femmes et trois jeunes hommes new-yorkais liés par une profonde amitié. Entre amour, travail, famille, ils partagent leurs bonheurs et leurs soucis au Central Perk, leur café favori.");
-        $program->setCategory($this->getReference('category_Action'));
-        $manager->persist($program);
+        for ($i = 0; $i < 5; $i++) {
+            $program = new Program();
+            $program->setTitle(self::TITLES[$i]);
+            $program->setSynopsis(self::SYNOPSIS[$i]);
+            $program->setCategory($this->getReference(self::REF_CATEGORIES[$i]));
+            $manager->persist($program);
+            $this->addReference('program_' . $i, $program);
+        }
 
         $manager->flush();
     }
