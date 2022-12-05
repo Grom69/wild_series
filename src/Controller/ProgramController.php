@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Episode;
+use App\Entity\Program;
 use App\Entity\Season;
 use App\Repository\ProgramRepository;
 use App\Repository\SeasonRepository;
@@ -22,14 +24,12 @@ class ProgramController extends AbstractController
         ]);
     }
 
-    #[Route('/{id}', methods: ['GET'], requirements: ['id' => '\d+'], name: 'show')]
-    public function show(int $id, ProgramRepository $programRepository): Response
+    #[Route('/{program}', methods: ['GET'], requirements: ['program' => '\d+'], name: 'show')]
+    public function show(Program $program): Response
     {
-        $program = $programRepository->findOneById($id);
-
         if (!$program) {
             throw $this->createNotFoundException(
-                'No program with id : ' . $id . ' found in program\'s table.'
+                'No program with id : ' . $program . ' found in program\'s table.'
             );
         }
 
@@ -43,27 +43,23 @@ class ProgramController extends AbstractController
     }
 
     #[Route(
-        '/{programId}/seasons/{seasonId}',
+        '/{program}/seasons/{season}',
         methods: ['GET'],
-        requirements: ['programId' => '\d+', 'seasonId' => '\d+'],
+        requirements: ['program' => '\d+', 'season' => '\d+'],
         name: 'season_show'
     )]
-    public function showSeason(int $programId, int $seasonId, ProgramRepository $programRepository, SeasonRepository $seasonRepository)
+    public function showSeason(Program $program, Season $season)
     {
-
-        $program = $programRepository->findOneById($programId);
 
         if (!$program) {
             throw $this->createNotFoundException(
-                'No program with id : ' . $programId . ' found in program\'s table.'
+                'No program with id : ' . $program . ' found in program\'s table.'
             );
         }
 
-        $season = $seasonRepository->findOneById($seasonId);
-
         if (!$season) {
             throw $this->createNotFoundException(
-                'No season with id : ' . $seasonId . ' found in season\'s table.'
+                'No season with id : ' . $season . ' found in season\'s table.'
             );
         }
 
@@ -73,6 +69,20 @@ class ProgramController extends AbstractController
             'program' => $program,
             'season' =>  $season,
             'episodes' => $episodes
+        ]);
+    }
+
+    #[Route(
+        '/program/{program}/season/{season}/episode/{episode}',
+        requirements: ['program' => '\d+', 'season' => '\d+', 'episode' => '\d+'],
+        name: 'episode_show'
+    )]
+    public function showEpisode(Program $program, Season $season, Episode $episode)
+    {
+        return $this->render('program/episode_show.html.twig', [
+            'program' => $program,
+            'season' =>  $season,
+            'episode' => $episode
         ]);
     }
 }
