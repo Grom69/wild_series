@@ -5,9 +5,10 @@ namespace App\Controller;
 use App\Entity\Episode;
 use App\Entity\Program;
 use App\Entity\Season;
+use App\Form\ProgramType;
 use App\Repository\ProgramRepository;
-use App\Repository\SeasonRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -73,7 +74,7 @@ class ProgramController extends AbstractController
     }
 
     #[Route(
-        '/program/{program}/season/{season}/episode/{episode}',
+        '/{program}/season/{season}/episode/{episode}',
         requirements: ['program' => '\d+', 'season' => '\d+', 'episode' => '\d+'],
         name: 'episode_show'
     )]
@@ -83,6 +84,30 @@ class ProgramController extends AbstractController
             'program' => $program,
             'season' =>  $season,
             'episode' => $episode
+        ]);
+    }
+
+    #[Route('/new', name: 'new')]
+    public function new(Request $request, ProgramRepository $programRepository): Response
+    {
+        // Create a new Category Object
+        $program = new Program();
+        // Create the associated Form
+        $form = $this->createForm(ProgramType::class, $program);
+        // Get data from HTTP request
+        $form->handleRequest($request);
+
+        // Was the form submitted ?
+        if ($form->isSubmitted()) {
+            $programRepository->save($program, true);
+
+            // Redirect to categories list
+            return $this->redirectToRoute('program_index');
+        }
+
+        // Render the form
+        return $this->renderForm('program/new.html.twig', [
+            'form' => $form,
         ]);
     }
 }
