@@ -6,6 +6,7 @@ use App\Entity\Program;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ProgramFixtures extends Fixture implements DependentFixtureInterface
 {
@@ -33,6 +34,13 @@ class ProgramFixtures extends Fixture implements DependentFixtureInterface
         'category_Animation'
     ];
 
+    private SluggerInterface $slugger;
+
+    public function __construct(SluggerInterface $slugger)
+    {
+        $this->slugger = $slugger;
+    }
+
     public function load(ObjectManager $manager): void
     {
         for ($i = 0; $i < 5; $i++) {
@@ -40,6 +48,7 @@ class ProgramFixtures extends Fixture implements DependentFixtureInterface
             $program->setTitle(self::TITLES[$i]);
             $program->setSynopsis(self::SYNOPSIS[$i]);
             $program->setCategory($this->getReference(self::REF_CATEGORIES[$i]));
+            $program->setSlug($this->slugger->slug($program->getTitle()));
             $manager->persist($program);
             $this->addReference('program_' . $i, $program);
         }

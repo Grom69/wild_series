@@ -7,10 +7,12 @@ use App\Entity\Program;
 use App\Entity\Season;
 use App\Form\ProgramType;
 use App\Repository\ProgramRepository;
+use App\Service\ProgramDuration;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 
 #[Route('/program', name: 'program_')]
 class ProgramController extends AbstractController
@@ -25,8 +27,8 @@ class ProgramController extends AbstractController
         ]);
     }
 
-    #[Route('/{program}', methods: ['GET'], requirements: ['program' => '\d+'], name: 'show')]
-    public function show(Program $program): Response
+    #[Route('/{slug}', methods: ['GET'], requirements: ['program' => '\d+'], name: 'show')]
+    public function show(Program $program, ProgramDuration $programDuration): Response
     {
         if (!$program) {
             throw $this->createNotFoundException(
@@ -34,17 +36,14 @@ class ProgramController extends AbstractController
             );
         }
 
-        $seasons = $program->getSeasons();
-
-        // dd($seasons);
-
         return $this->render('program/show.html.twig', [
-            'program' => $program, 'seasons' =>  $seasons
+            'program' => $program,
+            'programDuration' => $programDuration->calculate($program),
         ]);
     }
 
     #[Route(
-        '/{program}/seasons/{season}',
+        '/{slug}/seasons/{season}',
         methods: ['GET'],
         requirements: ['program' => '\d+', 'season' => '\d+'],
         name: 'season_show'
@@ -64,17 +63,17 @@ class ProgramController extends AbstractController
             );
         }
 
-        $episodes = $season->getEpisodes();
+        // $episodes = $season->getEpisodes();
 
         return $this->render('program/season_show.html.twig', [
             'program' => $program,
             'season' =>  $season,
-            'episodes' => $episodes
+            // 'episodes' => $episodes
         ]);
     }
 
     #[Route(
-        '/{program}/season/{season}/episode/{episode}',
+        '/{slug}/season/{season}/episode/{episode}',
         requirements: ['program' => '\d+', 'season' => '\d+', 'episode' => '\d+'],
         name: 'episode_show'
     )]
@@ -88,7 +87,7 @@ class ProgramController extends AbstractController
     }
 
     #[Route('/new', name: 'new')]
-    public function new(Request $request, ProgramRepository $programRepository): Response
+    public function new(Request $request, ProgramRepository $programRepository, SluggerInterface $slugger): Response
     {
         // Create a new Category Object
         $program = new Program();
@@ -99,6 +98,10 @@ class ProgramController extends AbstractController
 
         // Was the form submitted ?
         if ($form->isSubmitted() && $form->isValid()) {
+
+            $slug = $slugger->slug($program->getTitle());
+            $program->setSlug($slug);
+
             $programRepository->save($program, true);
 
             $this->addFlash('success', 'La série a été ajoutée avec succès');
