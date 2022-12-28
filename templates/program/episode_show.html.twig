@@ -23,8 +23,27 @@
 		</div>
 	</div>
 
-	<a href="{{ path("program_season_show", { slug: program.slug , season: season.id }) }}">
-		Retour à la liste des épisodes
-	</a>
+	{% if app.user %}
+		<h1>Ajouter un avis</h1>
 
-{% endblock %}
+		<div class="row m-5">
+			<div class="col-6">
+				{{ form(form) }}
+				</div>
+			</div>
+		{% endif %}
+
+		<h1>Avis sur l'épisode</h1>
+		<ul>
+			{% for comment in episode.comments|sort|reverse %}
+				<li>{{comment.comment}}
+					- rate :
+					{{comment.rate}}/10</li>
+			{% endfor %}
+		</ul>
+
+		<a href="{{ path("program_season_show", { slug: program.slug , season: season.id }) }}">
+			Retour à la liste des épisodes
+		</a>
+
+	{% endblock %}

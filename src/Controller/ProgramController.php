@@ -2,10 +2,13 @@
 
 namespace App\Controller;
 
+use App\Entity\Comment;
 use App\Entity\Episode;
 use App\Entity\Program;
 use App\Entity\Season;
+use App\Form\CommentType;
 use App\Form\ProgramType;
+use App\Repository\CommentRepository;
 use App\Repository\ProgramRepository;
 use App\Service\ProgramDuration;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -24,21 +27,6 @@ class ProgramController extends AbstractController
 
         return $this->render('program/index.html.twig', [
             'programs' => $programs
-        ]);
-    }
-
-    #[Route('/{slug}', methods: ['GET'], requirements: ['program' => '\d+'], name: 'show')]
-    public function show(Program $program, ProgramDuration $programDuration): Response
-    {
-        if (!$program) {
-            throw $this->createNotFoundException(
-                'No program with id : ' . $program . ' found in program\'s table.'
-            );
-        }
-
-        return $this->render('program/show.html.twig', [
-            'program' => $program,
-            'programDuration' => $programDuration->calculate($program),
         ]);
     }
 
@@ -77,12 +65,36 @@ class ProgramController extends AbstractController
         requirements: ['program' => '\d+', 'season' => '\d+', 'episode' => '\d+'],
         name: 'episode_show'
     )]
-    public function showEpisode(Program $program, Season $season, Episode $episode)
+    public function showEpisode(Request $request, Program $program, Season $season, Episode $episode, CommentRepository $commentRepository)
     {
-        return $this->render('program/episode_show.html.twig', [
+        // Create a new Category Object
+        $comment = new Comment();
+        // Create the associated Form
+        $form = $this->createForm(CommentType::class, $comment);
+        // Get data from HTTP request
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $comment->setAuthor($this->getUser());
+            $comment->setEpisode($episode);
+            $commentRepository->save($comment, true);
+
+            $this->addFlash('success', 'L\'avis a été ajouté avec succès');
+
+            // Redirect to categories list
+            return $this->renderForm('program/episode_show.html.twig', [
+                'program' => $program,
+                'season' =>  $season,
+                'episode' => $episode,
+                'form' => $form
+            ]);
+        }
+
+        return $this->renderForm('program/episode_show.html.twig', [
             'program' => $program,
             'season' =>  $season,
-            'episode' => $episode
+            'episode' => $episode,
+            'form' => $form
         ]);
     }
 
@@ -113,6 +125,21 @@ class ProgramController extends AbstractController
         // Render the form
         return $this->renderForm('program/new.html.twig', [
             'form' => $form,
+        ]);
+    }
+
+    #[Route('/{slug}', methods: ['GET'], requirements: ['program' => '\d+'], name: 'show')]
+    public function show(Program $program, ProgramDuration $programDuration): Response
+    {
+        if (!$program) {
+            throw $this->createNotFoundException(
+                'No program with id : ' . $program . ' found in program\'s table.'
+            );
+        }
+
+        return $this->render('program/show.html.twig', [
+            'program' => $program,
+            'programDuration' => $programDuration->calculate($program),
         ]);
     }
 }
