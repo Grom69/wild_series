@@ -51,12 +51,9 @@ class ProgramController extends AbstractController
             );
         }
 
-        // $episodes = $season->getEpisodes();
-
         return $this->render('program/season_show.html.twig', [
             'program' => $program,
             'season' =>  $season,
-            // 'episodes' => $episodes
         ]);
     }
 

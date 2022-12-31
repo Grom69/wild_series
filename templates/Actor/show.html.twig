@@ -5,7 +5,7 @@
 
 {% block body %}
 	<h1>Toutes les séries de l'acteur
-																												:
+																																				:
 		{{actor.name}}
 	</h1>
 	<ul>
@@ -14,7 +14,7 @@
 
 			<li>{{ program.title }}
 				-
-				<a href="{{ path("program_show", { program: program.id }) }}">Voir la fiche</a>
+				<a href="{{ path("program_show", { slug: program.slug }) }}">Voir la fiche</a>
 			</li>
 
 

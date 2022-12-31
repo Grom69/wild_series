@@ -11,12 +11,12 @@ class ProgramDuration
     public function calculate(Program $program): string
     {
         $totalDurationMinutes = 0;
+        $totalDurationTime = 0;
 
         $seasons = $program->getSeasons();
 
         foreach ($seasons as $season) {
             $episodes = $season->getEpisodes();
-
             foreach ($episodes as $episode) {
                 $episodeDuration = $episode->getDuration();
                 $totalDurationMinutes += $episodeDuration;
