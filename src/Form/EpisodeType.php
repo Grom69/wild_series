@@ -17,7 +17,7 @@ class EpisodeType extends AbstractType
             ->add('number')
             ->add('synopsis')
             ->add('duration', IntegerType::class)
-            ->add('season', null, ['choice_label' => 'number']);
+            ->add('season', null, ['choice_label' => 'seasonProgram']);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
